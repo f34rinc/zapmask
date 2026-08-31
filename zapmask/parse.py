@@ -26,3 +26,35 @@ def detect_service(ncols: int) -> str:
         return _NCOLS[ncols]
     except KeyError:
         raise ValueError(f"unrecognized column count {ncols}; expected 7 (SMP) or 13 (STFC)")
+
+
+def _data_rows(lines):
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        yield line.split(";")
+
+
+def parse_lines(lines, ddds, service=None):
+    allocations = []
+    resolved = service
+    for cols in _data_rows(lines):
+        if resolved is None:
+            resolved = detect_service(len(cols))
+        idx = _IDX[resolved]
+        if cols[idx["status"]].strip() != "1":
+            continue
+        ddd = cols[idx["ddd"]].strip()
+        if ddd not in ddds:
+            continue
+        allocations.append(Allocation(
+            carrier=cols[idx["carrier"]].strip(),
+            ddd=ddd,
+            prefix=cols[idx["prefix"]].strip(),
+            block_start=int(cols[idx["start"]]),
+            block_end=int(cols[idx["end"]]),
+        ))
+    if resolved is None:
+        raise ValueError("no data rows found in input")
+    return resolved, allocations

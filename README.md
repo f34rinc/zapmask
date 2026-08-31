@@ -1,0 +1,149 @@
+# zapmask
+
+ANATEL phone-number hashcat masks — mobile (SMP) + landline (STFC).
+
+## Authorized-use notice
+
+> zapmask is for auditing networks you own or are explicitly authorized to test. It is built entirely on public ANATEL numbering data and ships no personal data, handshakes, or targeting.
+
+## Getting the data
+
+zapmask does not download anything for you. Get the source dump yourself from the ABR Telecom EASI portal:
+
+```
+https://easi.abrtelecom.com.br/nsapn/#/public/files
+```
+
+The portal is captcha-gated, so this has to be a manual download. Pick a numbering-plan export:
+
+- **SMP** (`Serviço Móvel Pessoal`) — mobile allocations. Feeds mobile masks.
+- **STFC** (`Serviço Telefônico Fixo Comutado`) — landline allocations. Feeds landline masks.
+
+Both come as semicolon-delimited `.txt` files. zapmask auto-detects which one you gave it by column count (7 columns → SMP, 13 columns → STFC); pass `--service smp` or `--service stfc` to override the detection if needed.
+
+## Install
+
+Requires Python 3.9+. No third-party dependencies.
+
+```
+pipx install .
+```
+
+or run it in place without installing:
+
+```
+python -m zapmask
+```
+
+## Usage
+
+Basic run — mobile masks for DDD 21 (Rio de Janeiro), default 9-digit length:
+
+```
+python -m zapmask --src SMP_20260829_GERAL.txt --ddd 21
+```
+
+This writes two files to `masks/`:
+
+- `masks/smp_21_9digit_fine.hcmask` — 3,821 masks / 38.2M candidates, tight to the assigned ranges.
+- `masks/smp_21_9digit_coarse.hcmask` — 51 masks / 51M candidates, 25.2% over-coverage, sized to keep a GPU saturated.
+
+Emit more than one digit length at once with `--length`:
+
+```
+python -m zapmask --src SMP_20260829_GERAL.txt --ddd 21 --length 9,11
+```
+
+`9` is the bare subscriber number; `11` prepends the DDD. Add `8` to also emit the legacy pre-2012 form with no leading 9:
+
+```
+python -m zapmask --src SMP_20260829_GERAL.txt --ddd 21 --length 9,11,8
+```
+
+Landline dumps work the same way, just point `--src` at an STFC export:
+
+```
+python -m zapmask --src STFC_20260829_GERAL.txt --ddd 21
+```
+
+Landline numbers default to 8 digits. Valid lengths differ by service:
+
+| service | valid `--length` values | default |
+|---|---|---|
+| SMP (mobile) | 9, 11, 8 | 9 |
+| STFC (landline) | 8, 10 | 8 |
+
+If your GPU is bigger than the default coarse mask assumes, raise `--coarse-target` so coarse masks are sized for it:
+
+```
+python -m zapmask --src SMP_20260829_GERAL.txt --ddd 21 --coarse-target 2500000
+```
+
+Other flags: `--granularity {fine,coarse,both}` (default `both`) to emit only one flavor, and `--out DIR` (default `masks`) to change the output directory.
+
+Feed a `coarse` file straight to hashcat against a captured handshake (`-m 22000` is WPA-PBKDF2-PMKID+EAPOL):
+
+```
+hashcat -m 22000 -a 3 <hash.hc22000> masks/smp_21_9digit_coarse.hcmask
+```
+
+The exact command line is also written into the header comment of every `.hcmask` file zapmask produces, so you don't have to remember it.
+
+## fine vs coarse — why both exist
+
+`-m 22000` is a slow hash (PBKDF2-backed WPA/WPA2), and hashcat's `-a 3` (mask attack) has no inner-loop amplifier the way a fast hash with rule/combinator attacks does — every candidate the mask produces is exactly one base word tried against the target. To keep a GPU's pipeline full, hashcat needs roughly
+
+```
+kernel_power ≈ compute_units × threads × accel
+```
+
+base words in flight at once (`hashcat -m 22000 -b` prints your device's actual `kernel_power`). Hand it a mask that's smaller than that and it can't fill the pipeline — you'll see it warn something like *"the wordlist or mask you are using is too small"* and throughput craters.
+
+That's the reason zapmask emits two granularities of the same coverage:
+
+- **`fine`** masks are the exact assigned keyspace — one mask per allocated block, with just enough trailing `?d` digits to cover it and essentially no over-coverage. Precise, but individual masks can be far smaller than a GPU needs.
+- **`coarse`** masks fix fewer leading digits per mask, so each one expands to at least `--coarse-target` base words (default `240000`, i.e. masks of roughly 1,000,000 candidates). That's large enough to keep most GPUs saturated. This does mean a coarse mask covers some numbers that were never actually assigned — the trade is over-coverage in exchange for throughput — but it never *drops* a valid number: coarse masks are strictly a superset of the fine coverage.
+
+Use `coarse` for the actual hashcat run; keep `fine` around as the precise record of what was assigned.
+
+## Carrier ordering
+
+Within a `.hcmask` file, masks are emitted carrier-sorted — the carrier with the largest national number allocation first — so if you kill the job early, the masks most likely to hit are tried first.
+
+For `coarse` masks specifically, one shortened stem can span numbers from more than one carrier (that's the point of shortening it). In that case the group is attributed to whichever carrier present in the group has the largest total national allocation, not to whichever carrier happens to hold the most numbers within that one group. This keeps the ordering deterministic across runs instead of depending on a per-group majority vote.
+
+## Output
+
+Files are named:
+
+```
+<service>_<ddd>_<length>digit_<fine|coarse>.hcmask
+```
+
+e.g. `smp_21_9digit_coarse.hcmask` for mobile, DDD 21, 9-digit, coarse granularity.
+
+Every file opens with a header describing what it contains:
+
+```
+# zapmask smp 9-digit fine | DDD 21
+# source: SMP_20260829_GERAL.txt
+# carriers (biggest first): VIVO, CLARO, TIM, OI
+# 3,821 masks / 38,210,000 candidates / 0.2% over-coverage
+# hashcat -m 22000 -a 3 <hash.hc22000> <this file>
+```
+
+or, for the coarse companion file:
+
+```
+# zapmask smp 9-digit coarse | DDD 21
+# source: SMP_20260829_GERAL.txt
+# carriers (biggest first): VIVO, CLARO, TIM, OI
+# 51 masks / 51,000,000 candidates / 25.2% over-coverage
+# hashcat -m 22000 -a 3 <hash.hc22000> <this file>
+```
+
+followed by one hashcat mask per line.
+
+## License
+
+MIT, see [LICENSE](LICENSE).

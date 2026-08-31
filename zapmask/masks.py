@@ -21,3 +21,17 @@ def fine_masks(stem, blocks):
     if blocks == set(range(10)):
         return [stem + "?d?d?d?d"]
     return [f"{stem}{b}?d?d?d" for b in sorted(blocks)]
+
+
+def coarse_free_digits(target):
+    return math.ceil(math.log10(target))
+
+
+def coarse_stem(base_stem, free, min_keep):
+    drop = free - 4                      # fine tail is 4 free digits
+    keep = len(base_stem) - drop
+    clamped = False
+    if keep < min_keep:
+        keep = min_keep
+        clamped = True
+    return base_stem[:keep], clamped

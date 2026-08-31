@@ -36,3 +36,35 @@ def test_coarse_stem_clamps_to_min_keep():
     stem, clamped = masks.coarse_stem("91932", free=8, min_keep=2)
     assert stem == "91"
     assert clamped is True
+
+
+from zapmask.parse import Allocation
+
+
+def _alloc(carrier, ddd, prefix, s=0, e=9999):
+    return Allocation(carrier, ddd, prefix, s, e)
+
+
+def test_build_fine_carrier_sorted():
+    allocs = [
+        _alloc("TIM", "21", "92222"),
+        _alloc("CLARO", "21", "91111"),
+        _alloc("CLARO", "21", "91112"),
+    ]
+    lines, stats = masks.build_masks(allocs, "smp", 9, "fine", 240000)
+    # CLARO (2 prefixes = 20000) ranks before TIM (10000): its masks come first
+    assert lines[0].startswith("91111") and lines[1].startswith("91112")
+    assert lines[2].startswith("92222")
+    assert stats.mask_count == 3
+    assert stats.candidates == 30000            # 3 * 10^4
+    assert stats.carrier_order == ["CLARO", "TIM"]
+
+
+def test_build_coarse_groups_and_overcovers():
+    allocs = [_alloc("CLARO", "21", "91111"), _alloc("CLARO", "21", "91129")]
+    lines, stats = masks.build_masks(allocs, "smp", 9, "coarse", 240000)
+    # free=6 -> 3-digit stems: both collapse to "911"
+    assert lines == ["911?d?d?d?d?d?d"]
+    assert stats.candidates == 1000000
+    assert stats.assigned == 20000              # 2 full prefixes * 10000
+    assert round(stats.overcover_pct, 1) == 98.0

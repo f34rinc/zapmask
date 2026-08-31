@@ -25,7 +25,9 @@ def build_parser():
     p.add_argument("--src", help="ANATEL numbering .txt (semicolon-delimited) from the EASI portal")
     p.add_argument("--ddd", help="area code(s), comma-separated, e.g. 21,22")
     p.add_argument("--length", help="digit lengths, comma-separated; default: SMP 9 / STFC 8")
-    p.add_argument("--granularity", choices=["fine", "coarse", "both"], default="both")
+    p.add_argument("--granularity", choices=["fine", "coarse", "both"], default="both",
+                   help="fine = exact assigned keyspace; coarse = bigger GPU-saturating "
+                        "masks; both (default) writes each")
     p.add_argument("--coarse-target", type=int, default=240000,
                    dest="coarse_target", help="min base words per coarse mask (default 240000)")
     p.add_argument("--out", default="masks", help="output directory (default: masks)")

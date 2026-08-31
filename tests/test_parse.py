@@ -69,3 +69,12 @@ def test_parse_file_no_warning_when_prefix_matches(tmp_path, recwarn):
     service, allocs = parse.parse_file(p, ddds={"21"})
     assert service == "smp"
     assert len(recwarn) == 0
+
+
+def test_parse_lines_ragged_row_raises_value_error():
+    lines = [
+        "CLARO;111;21;91932;0000;9999;1",
+        "TRUNCATED;222",
+    ]
+    with pytest.raises(ValueError):
+        parse.parse_lines(lines, ddds={"21"})

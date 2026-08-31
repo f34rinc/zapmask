@@ -108,9 +108,9 @@ Use `coarse` for the actual hashcat run; keep `fine` around as the precise recor
 
 ## Carrier ordering
 
-Within a `.hcmask` file, masks are emitted carrier-sorted — the carrier with the largest national number allocation first — so if you kill the job early, the masks most likely to hit are tried first.
+Within a `.hcmask` file, masks are emitted carrier-sorted — ranked by total allocation across the carriers in your selected area code(s), largest first — so if you kill the job early, the masks most likely to hit are tried first.
 
-For `coarse` masks specifically, one shortened stem can span numbers from more than one carrier (that's the point of shortening it). In that case the group is attributed to whichever carrier present in the group has the largest total national allocation, not to whichever carrier happens to hold the most numbers within that one group. This keeps the ordering deterministic across runs instead of depending on a per-group majority vote.
+For `coarse` masks specifically, one shortened stem can span numbers from more than one carrier (that's the point of shortening it). In that case the group is attributed to whichever carrier present in the group has the largest total allocation among the carriers in your selected DDD(s), not to whichever carrier happens to hold the most numbers within that one group. This keeps the ordering deterministic across runs instead of depending on a per-group majority vote.
 
 ## Output
 
@@ -128,7 +128,7 @@ Every file opens with a header describing what it contains:
 # zapmask smp 9-digit fine | DDD 21
 # source: SMP_20260829_GERAL.txt
 # carriers (biggest first): VIVO, CLARO, TIM, OI
-# 3,821 masks / 38,210,000 candidates / 0.2% over-coverage
+# 3,821 masks / 38,210,000 candidates / 0.0% over-coverage
 # hashcat -m 22000 -a 3 <hash.hc22000> <this file>
 ```
 

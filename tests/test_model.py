@@ -1,4 +1,3 @@
-import pytest
 from zapmask import model
 from zapmask.parse import Allocation
 

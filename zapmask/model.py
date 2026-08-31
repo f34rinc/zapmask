@@ -5,7 +5,13 @@ from collections import defaultdict
 def decompose_range(start, end, width=4):
     """Minimal set of (fixed_prefix, free_count) tail-patterns exactly covering
     [start, end] inclusive over `width` digits. Each pattern is an aligned block of
-    10**free_count consecutive numbers, emitted as literal `fixed` digits + free ?d."""
+    10**free_count consecutive numbers, emitted as literal `fixed` digits + free ?d.
+
+    Callers always pass the ANATEL faixa (block) tail, which is fixed-width 4 digits
+    (width=4) regardless of service. Within a single run, all prefixes for a given
+    service also share one fixed width (SMP 5-digit, STFC 4-digit) ahead of this tail;
+    coarse grouping (see masks.py) relies on that per-service uniformity to compare
+    stems across allocations."""
     patterns = set()
     cur = start
     while cur <= end:

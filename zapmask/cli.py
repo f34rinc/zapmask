@@ -58,6 +58,8 @@ def run(args):
     if not args.ddd:
         return _fail("--ddd is required")
     ddds = {d.strip() for d in args.ddd.split(",") if d.strip()}
+    if args.coarse_target < 1:
+        return _fail("--coarse-target must be a positive integer")
 
     service, allocations = parse.parse_file(args.src, ddds, service=args.service)
 
@@ -80,6 +82,10 @@ def run(args):
     for length in lengths:
         for gran in grans:
             lines, stats = masks.build_masks(allocations, service, length, gran, args.coarse_target)
+            if stats.mask_count == 0:
+                print(f"no active allocations for DDD {ddd_token} in {os.path.basename(str(args.src))} "
+                      f"({service} {length}-digit)")
+                continue
             name = f"{service}_{ddd_token}_{length}digit_{gran}.hcmask"
             path = os.path.join(args.out, name)
             _write_file(path, lines, stats, args.src, ddd_token)

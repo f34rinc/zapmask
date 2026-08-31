@@ -51,3 +51,11 @@ def test_invalid_length_for_service(tmp_path, capsys):
     rc = cli.main(["--src", str(src), "--ddd", "21", "--length", "10"])
     assert rc == 2
     assert "length" in capsys.readouterr().err.lower()
+
+
+def test_non_positive_coarse_target_errors(tmp_path, capsys):
+    src = tmp_path / "SMP_x.txt"
+    src.write_text(SMP_FILE, encoding="utf-8")
+    rc = cli.main(["--src", str(src), "--ddd", "21", "--coarse-target", "0"])
+    assert rc == 2
+    assert "coarse-target" in capsys.readouterr().err

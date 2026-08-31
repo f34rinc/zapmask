@@ -7,6 +7,7 @@ SMP = "smp"
 STFC = "stfc"
 
 _NCOLS = {7: SMP, 13: STFC}
+_SERVICE_NCOLS = {SMP: 7, STFC: 13}
 
 _IDX = {
     SMP:  {"carrier": 0, "ddd": 2, "prefix": 3, "start": 4, "end": 5, "status": 6},
@@ -44,6 +45,11 @@ def parse_lines(lines, ddds, service=None):
     for cols in _data_rows(lines):
         if resolved is None:
             resolved = detect_service(len(cols))
+        if len(cols) != _SERVICE_NCOLS[resolved]:
+            raise ValueError(
+                f"expected {_SERVICE_NCOLS[resolved]} columns for {resolved}, "
+                f"got {len(cols)}: {';'.join(cols)!r}"
+            )
         idx = _IDX[resolved]
         if cols[idx["status"]].strip() != "1":
             continue

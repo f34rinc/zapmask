@@ -14,9 +14,9 @@ def test_stem_for_stfc_lengths():
 
 
 def test_fine_masks_full_and_partial():
-    assert masks.fine_masks("91932", set(range(10))) == ["91932?d?d?d?d"]
-    assert masks.fine_masks("5201", {0}) == ["52010?d?d?d"]
-    assert masks.fine_masks("93333", {2, 3}) == ["933332?d?d?d", "933333?d?d?d"]
+    assert masks.fine_masks("91932", {("", 4)}) == ["91932?d?d?d?d"]
+    assert masks.fine_masks("5201", {("0", 3)}) == ["52010?d?d?d"]
+    assert masks.fine_masks("93333", {("2", 3), ("3", 3)}) == ["933332?d?d?d", "933333?d?d?d"]
 
 
 def test_coarse_free_digits():

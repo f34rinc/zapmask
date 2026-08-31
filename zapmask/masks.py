@@ -21,10 +21,8 @@ def stem_for(service, length, ddd, prefix):
     return base
 
 
-def fine_masks(stem, blocks):
-    if blocks == set(range(10)):
-        return [stem + "?d?d?d?d"]
-    return [f"{stem}{b}?d?d?d" for b in sorted(blocks)]
+def fine_masks(stem, patterns):
+    return [f"{stem}{fixed}{'?d' * free}" for fixed, free in sorted(patterns)]
 
 
 def coarse_free_digits(target):
@@ -71,7 +69,7 @@ def build_masks(allocations, service, length, granularity, coarse_target):
     def dominant(counter):
         return min(counter, key=lambda n: (rank[n], n))
 
-    assigned = sum(len(blocks) * 1000 for blocks in coverage.values())
+    assigned = sum(10 ** free for pats in coverage.values() for (fixed, free) in pats)
     warnings_out = []
 
     if granularity == "fine":

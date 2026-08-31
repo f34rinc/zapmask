@@ -1,4 +1,6 @@
 """Read an ANATEL numbering .txt dump into normalized Allocation records."""
+import os
+import warnings
 from dataclasses import dataclass
 
 SMP = "smp"
@@ -57,4 +59,17 @@ def parse_lines(lines, ddds, service=None):
         ))
     if resolved is None:
         raise ValueError("no data rows found in input")
+    return resolved, allocations
+
+
+def parse_file(path, ddds, service=None):
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        resolved, allocations = parse_lines(fh, ddds, service=service)
+    name = os.path.basename(str(path)).upper()
+    hinted = SMP if name.startswith("SMP_") else STFC if name.startswith("STFC_") else None
+    if hinted is not None and hinted != resolved:
+        warnings.warn(
+            f"filename prefix suggests {hinted} but content parsed as {resolved}",
+            UserWarning,
+        )
     return resolved, allocations

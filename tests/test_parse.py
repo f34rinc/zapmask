@@ -52,3 +52,20 @@ def test_parse_lines_service_override():
     # a 7-col line forced to smp still parses; override skips detection
     service, allocs = parse.parse_lines(SMP_LINES, ddds={"21"}, service="smp")
     assert service == "smp"
+
+
+def test_parse_file_reads_and_warns_on_prefix_mismatch(tmp_path):
+    p = tmp_path / "STFC_test.txt"   # STFC name but SMP (7-col) content
+    p.write_text("\n".join(SMP_LINES), encoding="utf-8")
+    with pytest.warns(UserWarning):
+        service, allocs = parse.parse_file(p, ddds={"21"})
+    assert service == "smp"
+    assert len(allocs) == 2
+
+
+def test_parse_file_no_warning_when_prefix_matches(tmp_path, recwarn):
+    p = tmp_path / "SMP_test.txt"
+    p.write_text("\n".join(SMP_LINES), encoding="utf-8")
+    service, allocs = parse.parse_file(p, ddds={"21"})
+    assert service == "smp"
+    assert len(recwarn) == 0

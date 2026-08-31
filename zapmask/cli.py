@@ -1,8 +1,10 @@
 """Command-line interface: args, orchestration, file writing."""
 import argparse
+import os
 import sys
 
 from zapmask import masks
+from zapmask import parse
 
 _EPILOG = (
     "Getting the data (captcha-gated, download yourself):\n"
@@ -39,5 +41,64 @@ def main(argv=None):
         parser.print_help()
         return 0
     args = parser.parse_args(argv)
-    # orchestration is added in Task 11; for THIS task:
+    try:
+        return run(args)
+    except ValueError as exc:
+        return _fail(str(exc))
+
+
+def _fail(msg):
+    sys.stderr.write(f"zapmask: error: {msg}\n")
+    return 2
+
+
+def run(args):
+    if not args.src:
+        return _fail("--src is required")
+    if not args.ddd:
+        return _fail("--ddd is required")
+    ddds = {d.strip() for d in args.ddd.split(",") if d.strip()}
+
+    service, allocations = parse.parse_file(args.src, ddds, service=args.service)
+
+    if args.length:
+        try:
+            lengths = [int(x) for x in args.length.split(",")]
+        except ValueError:
+            return _fail("--length must be integers, e.g. 9,11")
+    else:
+        lengths = [masks.DEFAULT_LENGTH[service]]
+    bad = [n for n in lengths if n not in masks.VALID_LENGTHS[service]]
+    if bad:
+        return _fail(f"length(s) {bad} invalid for {service}; "
+                     f"valid: {sorted(masks.VALID_LENGTHS[service])}")
+
+    grans = ["fine", "coarse"] if args.granularity == "both" else [args.granularity]
+    os.makedirs(args.out, exist_ok=True)
+    ddd_token = "-".join(sorted(ddds))
+
+    for length in lengths:
+        for gran in grans:
+            lines, stats = masks.build_masks(allocations, service, length, gran, args.coarse_target)
+            name = f"{service}_{ddd_token}_{length}digit_{gran}.hcmask"
+            path = os.path.join(args.out, name)
+            _write_file(path, lines, stats, args.src, ddd_token)
+            print(f"{name}: {stats.mask_count} masks / {stats.candidates:,} candidates "
+                  f"({stats.overcover_pct:.1f}% over)")
+            for w in stats.warnings:
+                print(f"  warning: {w}")
     return 0
+
+
+def _write_file(path, lines, stats, src, ddd_token):
+    header = [
+        f"# zapmask {stats.service} {stats.length}-digit {stats.granularity} | DDD {ddd_token}",
+        f"# source: {os.path.basename(str(src))}",
+        f"# carriers (biggest first): {', '.join(stats.carrier_order)}",
+        f"# {stats.mask_count} masks / {stats.candidates:,} candidates "
+        f"/ {stats.overcover_pct:.1f}% over-coverage",
+        "# hashcat -m 22000 -a 3 <hash.hc22000> <this file>",
+    ]
+    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write("\n".join(header) + "\n")
+        fh.write("\n".join(lines) + "\n")

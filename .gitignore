@@ -1,4 +1,14 @@
+# ANATEL / ABR Telecom EASI source dumps — never commit (public data, but
+# large, dated, and redistributed by the user, not this repo). Users download
+# their own from https://easi.abrtelecom.com.br/nsapn/#/public/files
+SMP_*.txt
+STFC_*.txt
+*_GERAL.txt
+
+# Generated mask output (default --out directory)
 masks/
+
+# Python
 __pycache__/
 *.pyc
 .pytest_cache/

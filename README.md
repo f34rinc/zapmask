@@ -42,10 +42,11 @@ Requires Python 3.9+. No third-party dependencies.
 pipx install .
 ```
 
-or run it in place without installing:
+or run it in place without installing — either of these works and is equivalent:
 
 ```
 python -m zapmask
+python run.py
 ```
 
 ## Usage

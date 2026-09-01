@@ -1,5 +1,7 @@
 # zapmask
 
+*[English](README.md) · [Português (BR)](README.pt-BR.md)*
+
 ANATEL phone-number hashcat masks — mobile (SMP) + landline (STFC).
 
 ## Authorized-use notice

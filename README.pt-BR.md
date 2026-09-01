@@ -23,6 +23,17 @@ O portal é protegido por captcha, então o download precisa ser manual. Escolha
 
 Ambos vêm como arquivos `.txt` delimitados por ponto e vírgula. O zapmask detecta automaticamente qual deles você forneceu pela contagem de colunas (7 colunas → SMP, 13 colunas → STFC); use `--service smp` ou `--service stfc` para forçar a detecção, se necessário.
 
+## Experimente com dados de exemplo
+
+Ainda sem um dump? Dois arquivos de exemplo **sintéticos** vêm em [`examples/`](examples/) para você testar o zapmask sem o portal — operadoras e prefixos fictícios, não são faixas reais:
+
+```
+python -m zapmask --src examples/SMP_sample.txt --ddd 21 --out out    # celular
+python -m zapmask --src examples/STFC_sample.txt --ddd 21 --out out   # fixo (mostra a decomposição de faixas sub-milhar)
+```
+
+Veja [`examples/README.md`](examples/README.md) para o que cada arquivo exercita.
+
 ## Instalação
 
 Requer Python 3.9+. Sem dependências de terceiros.

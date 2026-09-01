@@ -23,6 +23,17 @@ The portal is captcha-gated, so this has to be a manual download. Pick a numberi
 
 Both come as semicolon-delimited `.txt` files. zapmask auto-detects which one you gave it by column count (7 columns → SMP, 13 columns → STFC); pass `--service smp` or `--service stfc` to override the detection if needed.
 
+## Try it with sample data
+
+No dump yet? Two **synthetic** sample files ship in [`examples/`](examples/) so you can try zapmask without the portal — fictional carriers and prefixes, not real allocations:
+
+```
+python -m zapmask --src examples/SMP_sample.txt --ddd 21 --out out    # mobile
+python -m zapmask --src examples/STFC_sample.txt --ddd 21 --out out   # landline (shows sub-thousand decomposition)
+```
+
+See [`examples/README.md`](examples/README.md) for what each file exercises.
+
 ## Install
 
 Requires Python 3.9+. No third-party dependencies.

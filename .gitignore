@@ -4,6 +4,9 @@
 SMP_*.txt
 STFC_*.txt
 *_GERAL.txt
+# ...but keep the synthetic sample files shipped for docs/testing
+!examples/SMP_sample.txt
+!examples/STFC_sample.txt
 
 # Generated mask output (default --out directory)
 masks/

@@ -1,0 +1,9 @@
+# SYNTHETIC SAMPLE — not real ANATEL data. Fictional carriers, zeroed CNPJs,
+# made-up prefixes. For trying zapmask without downloading the real dump.
+# Real files come from https://easi.abrtelecom.com.br/nsapn/#/public/files
+# Nome da Prestadora;CNPJ da Prestadora;Código Nacional;Prefixo;Faixa Inicial;Faixa Final;Status
+ACME MOVEL LTDA (EXEMPLO);00000000000000;21;99001;0000;9999;1
+ACME MOVEL LTDA (EXEMPLO);00000000000000;21;99002;0000;9999;1
+EXEMPLO TELECOM SA;00000000000000;21;98500;0000;4999;1
+INATIVA LTDA (EXEMPLO);00000000000000;21;97000;0000;9999;0
+OUTRO DDD LTDA (EXEMPLO);00000000000000;11;99999;0000;9999;1

@@ -1,0 +1,7 @@
+# SYNTHETIC SAMPLE — not real ANATEL data. Fictional carriers, zeroed CNPJs,
+# made-up prefixes. For trying zapmask without downloading the real dump.
+# The 3201 row uses a sub-thousand range (1000-1524) to show landline
+# range decomposition. Real files: https://easi.abrtelecom.com.br/nsapn/#/public/files
+# Nome da Prestadora;CNPJ da Prestadora;UF;Código Nacional;Prefixo;Faixa Inicial;Faixa Final;Código CNL;Nome da Localidade;Área Local;Sigla Área Local;Código Área Local;Status
+EXEMPLO FIXO SA;00000000000000;RJ;21;3200;0000;9999;11000;Rio de Janeiro (Exemplo);Rio de Janeiro (Exemplo);RJO;3827;1
+EXEMPLO FIXO SA;00000000000000;RJ;21;3201;1000;1524;11000;Rio de Janeiro (Exemplo);Rio de Janeiro (Exemplo);RJO;3827;1

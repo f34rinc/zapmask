@@ -38,11 +38,13 @@ Veja [`examples/README.md`](examples/README.md) para o que cada arquivo exercita
 
 Requer Python 3.9+. Sem dependências de terceiros.
 
+Instale o comando `zapmask` no seu PATH:
+
 ```
 pipx install .
 ```
 
-ou execute no lugar, sem instalar — qualquer um destes funciona e é equivalente:
+Ou execute no lugar, sem instalar — estes dois são equivalentes:
 
 ```
 python -m zapmask

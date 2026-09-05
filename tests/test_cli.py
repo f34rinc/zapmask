@@ -59,3 +59,34 @@ def test_non_positive_coarse_target_errors(tmp_path, capsys):
     rc = cli.main(["--src", str(src), "--ddd", "21", "--coarse-target", "0"])
     assert rc == 2
     assert "coarse-target" in capsys.readouterr().err
+
+
+SMP_MULTI = "\n".join([
+    "# Nome;CNPJ;Codigo;Prefixo;Ini;Fim;Status",
+    "CLARO;1;21;91932;0000;9999;1",
+    "TIM;2;22;98888;0000;9999;1",
+])
+
+
+def test_ddd_filename_token_rules():
+    assert cli.ddd_filename_token({"21"}) == "21"
+    assert cli.ddd_filename_token({"22", "21"}) == "multi"
+    assert cli.ddd_filename_token({"22", "21"}, label="all") == "all"
+
+
+def test_ddd_header_desc_lists_when_few_else_counts():
+    assert cli.ddd_header_desc({"21"}, "21") == "DDD 21"
+    assert cli.ddd_header_desc({"22", "21"}, "multi") == "DDD multi: 21,22"
+    many = {str(10 + i) for i in range(20)}
+    assert cli.ddd_header_desc(many, "all") == "DDD all (20 area codes)"
+
+
+def test_run_names_multi_ddd_file_multi(tmp_path):
+    src = tmp_path / "SMP_x.txt"
+    src.write_text(SMP_MULTI, encoding="utf-8")
+    out = tmp_path / "m"
+    rc = cli.main(["--src", str(src), "--ddd", "21,22", "--out", str(out)])
+    assert rc == 0
+    assert (out / "smp_multi_9digit_fine.hcmask").exists()
+    header = (out / "smp_multi_9digit_fine.hcmask").read_text()
+    assert "DDD multi: 21,22" in header

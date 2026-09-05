@@ -4,6 +4,9 @@
 SMP_*.txt
 STFC_*.txt
 *_GERAL.txt
+# Any .txt dropped in the project root (dumps land here for drag-and-drop);
+# anchored to root so tracked .txt in subdirs (examples/) are unaffected.
+/*.txt
 # ...but keep the synthetic sample files shipped for docs/testing
 !examples/SMP_sample.txt
 !examples/STFC_sample.txt

@@ -79,18 +79,19 @@ def run(args):
 
     grans = ["fine", "coarse"] if args.granularity == "both" else [args.granularity]
     os.makedirs(args.out, exist_ok=True)
-    ddd_token = "-".join(sorted(ddds))
+    ddd_token = ddd_filename_token(ddds, label=getattr(args, "ddd_label", None))
+    ddd_desc = ddd_header_desc(ddds, ddd_token)
 
     for length in lengths:
         for gran in grans:
             lines, stats = masks.build_masks(allocations, service, length, gran, args.coarse_target)
             if stats.mask_count == 0:
-                print(f"no active allocations for DDD {ddd_token} in {os.path.basename(str(args.src))} "
+                print(f"no active allocations for {ddd_desc} in {os.path.basename(str(args.src))} "
                       f"({service} {length}-digit)")
                 continue
             name = f"{service}_{ddd_token}_{length}digit_{gran}.hcmask"
             path = os.path.join(args.out, name)
-            _write_file(path, lines, stats, args.src, ddd_token)
+            _write_file(path, lines, stats, args.src, ddd_desc)
             print(f"{name}: {stats.mask_count} masks / {stats.candidates:,} candidates "
                   f"({stats.overcover_pct:.1f}% over)")
             for w in stats.warnings:
@@ -98,9 +99,38 @@ def run(args):
     return 0
 
 
-def _write_file(path, lines, stats, src, ddd_token):
+def ddd_filename_token(ddds, label=None):
+    """Short, filename-safe tag for the selected area code(s).
+
+    One code keeps its number; an explicit `label` (the wizard passes
+    'all' when every code in the file was selected) wins; otherwise a
+    multi-code selection collapses to 'multi' so filenames stay short.
+    """
+    ddds = sorted(ddds)
+    if len(ddds) == 1:
+        return ddds[0]
+    if label:
+        return label
+    return "multi"
+
+
+def ddd_header_desc(ddds, token):
+    """Human-readable area-code line for the in-file header comment.
+
+    Keeps the real list when it's short enough to be useful; falls back
+    to a count when there are too many to list without bloating the file.
+    """
+    ddds = sorted(ddds)
+    if len(ddds) == 1:
+        return f"DDD {ddds[0]}"
+    if len(ddds) <= 12:
+        return f"DDD {token}: {','.join(ddds)}"
+    return f"DDD {token} ({len(ddds)} area codes)"
+
+
+def _write_file(path, lines, stats, src, ddd_desc):
     header = [
-        f"# zapmask {stats.service} {stats.length}-digit {stats.granularity} | DDD {ddd_token}",
+        f"# zapmask {stats.service} {stats.length}-digit {stats.granularity} | {ddd_desc}",
         f"# source: {os.path.basename(str(src))}",
         f"# carriers (biggest first): {', '.join(stats.carrier_order)}",
         f"# {stats.mask_count} masks / {stats.candidates:,} candidates "

@@ -51,6 +51,36 @@ python -m zapmask
 python run.py
 ```
 
+## Interactive mode (drag & drop)
+
+Don't want to remember flags? **Drag an ANATEL `.txt` onto `run.py`** and answer the prompts. It's a colorful, zero-dependency wizard — it detects whether the file is SMP or STFC, shows which area codes the file actually contains, and prompts for every option with its default in brackets (press Enter to accept):
+
+```
+python run.py                          # start the wizard, it asks for the file
+python run.py SMP_20260829_GERAL.txt   # same as dragging the file onto run.py
+```
+
+On Windows the file's path is passed straight through when you drop it on `run.py`; on macOS/Linux, launch it and paste (or drop) the path at the first prompt. Either way you get:
+
+```
+zapmask - interactive mode
+
+Detected SMP  -  2 area code(s) present
+  11      1   21  3,821
+
+Area code(s) to build masks for  (e.g. 21,22 or 21-43, or 'all') [all]:
+Digit length(s)  (valid: 8,9,11) [9]:
+Granularity (fine/coarse/both) [both]:
+Coarse target (min base words per mask) [240000]:
+Output directory [masks]:
+```
+
+The area-code prompt defaults to **`all`** — press Enter to build masks for every DDD in the file, so you never have to type out a long list. You can also enter specific codes (`21,22`), a **range** (`21-43`), or mix them (`21-24,31,41-43`). Ranges expand to only the codes actually present in the file, so gaps in the numbering plan are skipped automatically.
+
+**Drop more than one file at once** (e.g. a mobile SMP export *and* a landline STFC export) and each is handled in turn — the wizard detects each file's service and asks its options separately, writing both mask sets.
+
+The classic flag-driven CLI below is unchanged — pass any `--flag` (or use `python -m zapmask`) and you get the non-interactive interface, ideal for scripts and CI.
+
 ## Usage
 
 Basic run — mobile masks for DDD 21 (Rio de Janeiro), default 9-digit length:
@@ -137,6 +167,8 @@ Files are named:
 ```
 
 e.g. `smp_21_9digit_coarse.hcmask` for mobile, DDD 21, 9-digit, coarse granularity.
+
+The `<ddd>` part is the single area code when you pick one; when you select several it collapses to `all` (every code in the file) or `multi` (some of them) so the name stays short instead of listing dozens of codes — e.g. `smp_all_9digit_coarse.hcmask`. The exact codes are still recorded in the file's header comment.
 
 Every file opens with a header describing what it contains:
 

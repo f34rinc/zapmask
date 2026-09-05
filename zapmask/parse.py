@@ -79,3 +79,30 @@ def parse_file(path, ddds, service=None):
             UserWarning,
         )
     return resolved, allocations
+
+
+def scan_ddds(path, service=None):
+    """Scan a dump and count active allocations per DDD.
+
+    Returns (service, {ddd: count}) so a caller can show which area
+    codes a file actually contains before asking the user to pick one.
+    """
+    counts = {}
+    resolved = service
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        for cols in _data_rows(fh):
+            if resolved is None:
+                resolved = detect_service(len(cols))
+            if len(cols) != _SERVICE_NCOLS[resolved]:
+                raise ValueError(
+                    f"expected {_SERVICE_NCOLS[resolved]} columns for {resolved}, "
+                    f"got {len(cols)}: {';'.join(cols)!r}"
+                )
+            idx = _IDX[resolved]
+            if cols[idx["status"]].strip() != "1":
+                continue
+            ddd = cols[idx["ddd"]].strip()
+            counts[ddd] = counts.get(ddd, 0) + 1
+    if resolved is None:
+        raise ValueError("no data rows found in input")
+    return resolved, counts

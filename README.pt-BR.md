@@ -51,6 +51,36 @@ python -m zapmask
 python run.py
 ```
 
+## Modo interativo (arrastar e soltar)
+
+Não quer decorar as flags? **Arraste um `.txt` da ANATEL sobre o `run.py`** e responda às perguntas. É um assistente colorido e sem dependências — ele detecta se o arquivo é SMP ou STFC, mostra quais DDDs o arquivo realmente contém e pergunta cada opção com o padrão entre colchetes (aperte Enter para aceitar):
+
+```
+python run.py                          # inicia o assistente, ele pede o arquivo
+python run.py SMP_20260829_GERAL.txt   # o mesmo que arrastar o arquivo sobre o run.py
+```
+
+No Windows, o caminho do arquivo é repassado diretamente ao soltá-lo sobre o `run.py`; no macOS/Linux, inicie-o e cole (ou solte) o caminho na primeira pergunta. De qualquer forma, você vê:
+
+```
+zapmask - interactive mode
+
+Detected SMP  -  2 area code(s) present
+  11      1   21  3,821
+
+Area code(s) to build masks for  (e.g. 21,22 or 21-43, or 'all') [all]:
+Digit length(s)  (valid: 8,9,11) [9]:
+Granularity (fine/coarse/both) [both]:
+Coarse target (min base words per mask) [240000]:
+Output directory [masks]:
+```
+
+A pergunta de DDD tem padrão **`all`** — aperte Enter para gerar máscaras para todos os DDDs do arquivo, sem precisar digitar uma lista longa. Você também pode informar códigos específicos (`21,22`), um **intervalo** (`21-43`), ou misturar (`21-24,31,41-43`). Os intervalos se expandem apenas para os códigos que realmente existem no arquivo, então as lacunas do plano de numeração são ignoradas automaticamente.
+
+**Solte mais de um arquivo de uma vez** (por exemplo, um export de celular SMP *e* um de fixo STFC) e cada um é tratado na sequência — o assistente detecta o serviço de cada arquivo e pergunta as opções separadamente, gravando os dois conjuntos de máscaras.
+
+A CLI clássica por flags, abaixo, permanece inalterada — passe qualquer `--flag` (ou use `python -m zapmask`) e você obtém a interface não-interativa, ideal para scripts e CI.
+
 ## Uso
 
 Execução básica — máscaras de celular para o DDD 21 (Rio de Janeiro), comprimento padrão de 9 dígitos:
@@ -137,6 +167,8 @@ Os arquivos são nomeados assim:
 ```
 
 por exemplo, `smp_21_9digit_coarse.hcmask` para celular, DDD 21, 9 dígitos, granularidade coarse.
+
+A parte `<ddd>` é o código de área único quando você escolhe um; ao selecionar vários, ela vira `all` (todos os códigos do arquivo) ou `multi` (alguns deles), para o nome ficar curto em vez de listar dezenas de códigos — por exemplo, `smp_all_9digit_coarse.hcmask`. Os códigos exatos continuam registrados no cabeçalho do arquivo.
 
 Todo arquivo começa com um cabeçalho que descreve o que ele contém:
 

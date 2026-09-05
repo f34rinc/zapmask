@@ -32,6 +32,8 @@ python -m zapmask --src examples/SMP_sample.txt --ddd 21 --out out    # celular
 python -m zapmask --src examples/STFC_sample.txt --ddd 21 --out out   # fixo (mostra a decomposição de faixas sub-milhar)
 ```
 
+Prefere clicar? Arraste qualquer um dos arquivos de exemplo sobre o `run.py` para experimentar o [assistente interativo](#modo-interativo-arrastar-e-soltar).
+
 Veja [`examples/README.md`](examples/README.md) para o que cada arquivo exercita.
 
 ## Instalação
@@ -44,12 +46,14 @@ Instale o comando `zapmask` no seu PATH:
 pipx install .
 ```
 
-Ou execute no lugar, sem instalar — estes dois são equivalentes:
+Ou execute no lugar, sem instalar. Há dois pontos de entrada:
 
 ```
-python -m zapmask
-python run.py
+python run.py                            # assistente interativo (compatível com arrastar e soltar)
+python -m zapmask --src ... --ddd ...     # interface de linha de comando clássica
 ```
+
+O `run.py` abre o assistente interativo quando iniciado sem flags (ou ao soltar um arquivo nele) e recai para a CLI clássica assim que você passa qualquer `--flag`. O `python -m zapmask` é sempre a CLI clássica. Ambos são descritos abaixo.
 
 ## Modo interativo (arrastar e soltar)
 

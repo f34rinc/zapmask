@@ -25,3 +25,6 @@ python -m zapmask --src examples/SMP_sample.txt --ddd 21 --out out
 # landline, DDD 21 (demonstrates sub-thousand decomposition)
 python -m zapmask --src examples/STFC_sample.txt --ddd 21 --out out
 ```
+
+Or drag either file onto `run.py` to walk through the interactive wizard
+(colorful prompts, defaults shown, area-code ranges and `all`).

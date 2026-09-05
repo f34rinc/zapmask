@@ -32,6 +32,8 @@ python -m zapmask --src examples/SMP_sample.txt --ddd 21 --out out    # mobile
 python -m zapmask --src examples/STFC_sample.txt --ddd 21 --out out   # landline (shows sub-thousand decomposition)
 ```
 
+Prefer to click? Drag either sample file onto `run.py` to try the [interactive wizard](#interactive-mode-drag--drop) instead.
+
 See [`examples/README.md`](examples/README.md) for what each file exercises.
 
 ## Install
@@ -44,12 +46,14 @@ Install the `zapmask` command onto your PATH:
 pipx install .
 ```
 
-Or run it in place without installing — these two are equivalent:
+Or run it in place without installing. There are two entry points:
 
 ```
-python -m zapmask
-python run.py
+python run.py                            # interactive wizard (drag-and-drop friendly)
+python -m zapmask --src ... --ddd ...     # classic command-line interface
 ```
+
+`run.py` opens the interactive wizard when you launch it with no flags (or drop a file onto it), and falls through to the classic CLI as soon as you pass any `--flag`. `python -m zapmask` is always the classic CLI. Both are covered below.
 
 ## Interactive mode (drag & drop)
 
